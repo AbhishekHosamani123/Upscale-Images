@@ -1,13 +1,14 @@
 {
-  "functions": {
-    "api/upload.py": {
-      "runtime": "python3.11"
-    }
-  },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/upload",
-      "destination": "/api/upload"
+      "src": "api/upload.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/upload",
+      "dest": "/api/upload.py"
     }
   ]
 }
