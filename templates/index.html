@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Upscaler</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-expand-arrows-alt"></i>
+                <h1>AI Image Upscaler</h1>
+            </div>
+            <p class="subtitle">Transform your images with advanced AI-powered upscaling</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Drop your image here</h3>
+                        <p>or <span class="browse-link">browse files</span></p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <div class="supported-formats">
+                            <small>Supported: PNG, JPG, JPEG, BMP, TIFF, WebP (Max 50MB)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="settings-section" id="settingsSection" style="display: none;">
+                <h3><i class="fas fa-cog"></i> Upscaling Settings</h3>
+                
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label for="scaleMode">Scaling Mode</label>
+                        <select id="scaleMode">
+                            <option value="factor">Scale Factor</option>
+                            <option value="dimensions">Custom Dimensions</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group" id="scaleFactorGroup">
+                        <label for="scaleFactor">Scale Factor</label>
+                        <div class="range-container">
+                            <input type="range" id="scaleFactor" min="1" max="5" step="0.1" value="2">
+                            <span class="range-value" id="scaleFactorValue">2.0x</span>
+                        </div>
+                        <div class="preset-buttons">
+                            <button class="preset-btn" data-scale="1.5">1.5x</button>
+                            <button class="preset-btn" data-scale="2">2x</button>
+                            <button class="preset-btn" data-scale="3">3x</button>
+                            <button class="preset-btn" data-scale="4">4x</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group" id="dimensionsGroup" style="display: none;">
+                        <label for="targetWidth">Target Dimensions</label>
+                        <div class="dimensions-input">
+                            <input type="number" id="targetWidth" placeholder="Width" min="1" max="20000">
+                            <span>×</span>
+                            <input type="number" id="targetHeight" placeholder="Height" min="1" max="20000">
+                        </div>
+                        <div class="preset-resolutions">
+                            <button class="preset-btn" data-width="1920" data-height="1080">1080p</button>
+                            <button class="preset-btn" data-width="2560" data-height="1440">1440p</button>
+                            <button class="preset-btn" data-width="3840" data-height="2160">4K</button>
+                            <button class="preset-btn" data-width="7680" data-height="4320">8K</button>
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="interpolation">Algorithm</label>
+                        <select id="interpolation">
+                            <option value="lanczos">Lanczos4 (Best Quality)</option>
+                            <option value="cubic">Cubic (Balanced)</option>
+                            <option value="linear">Linear (Fast)</option>
+                            <option value="area">Area (Smooth)</option>
+                            <option value="nearest">Nearest (Pixel Perfect)</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="quality">Output Quality</label>
+                        <div class="range-container">
+                            <input type="range" id="quality" min="1" max="100" value="95">
+                            <span class="range-value" id="qualityValue">95%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="backBtn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary" id="upscaleBtn">
+                        <i class="fas fa-magic"></i> Upscale Image
+                    </button>
+                </div>
+            </div>
+
+            <!-- Processing Section -->
+            <div class="processing-section" id="processingSection" style="display: none;">
+                <div class="processing-content">
+                    <div class="spinner"></div>
+                    <h3>Upscaling your image...</h3>
+                    <p>This may take a few moments depending on image size</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3><i class="fas fa-check-circle"></i> Upscaling Complete!</h3>
+                
+                <div class="results-content">
+                    <div class="image-comparison">
+                        <div class="image-container">
+                            <h4>Original</h4>
+                            <img id="originalImage" alt="Original image">
+                            <div class="image-info" id="originalInfo"></div>
+                        </div>
+                        <div class="comparison-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="image-container">
+                            <h4>Upscaled</h4>
+                            <img id="upscaledImage" alt="Upscaled image">
+                            <div class="image-info" id="upscaledInfo"></div>
+                        </div>
+                    </div>
+
+                    <div class="download-section">
+                        <button class="btn btn-download" id="downloadBtn">
+                            <i class="fas fa-download"></i> Download Upscaled Image
+                        </button>
+                        <button class="btn btn-secondary" id="newImageBtn">
+                            <i class="fas fa-plus"></i> Upscale Another Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Error Modal -->
+        <div class="modal" id="errorModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                    <button class="modal-close" id="closeErrorModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="closeErrorBtn">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
