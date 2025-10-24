@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  image-upscaler:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=your-secret-key-change-in-production
+      - MAX_CONTENT_LENGTH=25165824  # 25MB
+      - MAX_SCALE_FACTOR=5.0
+      - MAX_DIMENSION=10000
+      - RATELIMIT_DEFAULT=50 per hour
+      - ENABLE_METRICS=true
+      - FILE_CLEANUP_INTERVAL=3600
+      - FILE_MAX_AGE=86400
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Optional: Redis for caching and rate limiting
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - image-upscaler
+    restart: unless-stopped
+
+volumes:
+  redis_data:

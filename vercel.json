@@ -1,14 +1,22 @@
 {
+  "version": 2,
   "builds": [
     {
-      "src": "api/upload.py",
+      "src": "working_app.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/upload",
-      "dest": "/api/upload.py"
+      "src": "/(.*)",
+      "dest": "working_app.py"
     }
-  ]
+  ],
+  "env": {
+    "FLASK_ENV": "production",
+    "SECRET_KEY": "vercel-production-secret-key",
+    "MAX_CONTENT_LENGTH": "25165824",
+    "MAX_SCALE_FACTOR": "5.0",
+    "MAX_DIMENSION": "10000"
+  }
 }
